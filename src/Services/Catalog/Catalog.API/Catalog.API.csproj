@@ -23,9 +23,6 @@
     <Content Include="Setup\**\*;">
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Remove="Setup\Catalogitems - Copy.zip" />
-    <None Remove="Setup\Catalogitems - Copy.zip" />
-    <Compile Include="IntegrationEvents\EventHandling\AnyFutureIntegrationEventHandler.cs.txt" />
     <Content Update="web.config;">
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
@@ -51,7 +48,6 @@
     <ProjectReference Include="..\..\..\BuildingBlocks\EventBus\EventBusRabbitMQ\EventBusRabbitMQ.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\EventBus\EventBusServiceBus\EventBusServiceBus.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\EventBus\EventBus\EventBus.csproj" />    
-    <ProjectReference Include="..\..\..\BuildingBlocks\EventBus\IntegrationEventLogEF\IntegrationEventLogEF.csproj" />    
   </ItemGroup>
 
   <ItemGroup>
@@ -64,8 +60,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Infrastructure\Filters\" />
+    <Folder Include="Controllers\" />
     <Folder Include="Infrastructure\IntegrationEventMigrations\" />
+    <Folder Include="IntegrationEvents\EventHandling\" />
+    <Folder Include="Setup\" />
+    <Folder Include="Pics\" />
   </ItemGroup>
 
 </Project>

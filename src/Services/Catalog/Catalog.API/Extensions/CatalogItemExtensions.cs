@@ -1,4 +1,4 @@
-﻿using Catalog.API.Model;
+﻿using Microsoft.eShopOnContainers.Services.Catalog.API.Model;
 
 namespace Catalog.API.Extensions
 {
