@@ -1,10 +1,11 @@
-﻿using Catalog.API.Model;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.eShopOnContainers.Services.Catalog.API.Model;
 
-namespace Catalog.API.Infrastructure.EntityConfigurations
+namespace Microsoft.eShopOnContainers.Services.Catalog.API.Infrastructure.EntityConfigurations
 {
-    class CatalogItemEntityTypeConfiguration : IEntityTypeConfiguration<CatalogItem>
+    class CatalogItemEntityTypeConfiguration
+        : IEntityTypeConfiguration<CatalogItem>
     {
         public void Configure(EntityTypeBuilder<CatalogItem> builder)
         {

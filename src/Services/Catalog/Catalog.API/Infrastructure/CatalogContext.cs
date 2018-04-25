@@ -1,8 +1,8 @@
-﻿namespace Catalog.API.Infrastructure
+﻿namespace Microsoft.eShopOnContainers.Services.Catalog.API.Infrastructure
 {
-    using Catalog.API.Infrastructure.EntityConfigurations;
-    using Catalog.API.Model;
     using Microsoft.EntityFrameworkCore;
+    using EntityConfigurations;
+    using Model;
     using Microsoft.EntityFrameworkCore.Design;
 
     public class CatalogContext : DbContext
@@ -20,16 +20,17 @@
             builder.ApplyConfiguration(new CatalogTypeEntityTypeConfiguration());
             builder.ApplyConfiguration(new CatalogItemEntityTypeConfiguration());
         }
+    }
 
-        public class CatalogContextDesignFactory : IDesignTimeDbContextFactory<CatalogContext>
+
+    public class CatalogContextDesignFactory : IDesignTimeDbContextFactory<CatalogContext>
+    {
+        public CatalogContext CreateDbContext(string[] args)
         {
-            public CatalogContext CreateDbContext(string[] args)
-            {
-                var optionsBuilder = new DbContextOptionsBuilder<CatalogContext>()
-                    .UseSqlServer("Server=.;Initial Catalog=Microsoft.eShopOnContainers.Services.CatalogDb;Integrated Security=true");
+            var optionsBuilder = new DbContextOptionsBuilder<CatalogContext>()
+                .UseSqlServer("Server=.;Initial Catalog=Microsoft.eShopOnContainers.Services.CatalogDb;Integrated Security=true");
 
-                return new CatalogContext(optionsBuilder.Options);
-            }
+            return new CatalogContext(optionsBuilder.Options);
         }
     }
 }

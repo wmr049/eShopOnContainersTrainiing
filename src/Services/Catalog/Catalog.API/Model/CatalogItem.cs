@@ -1,30 +1,47 @@
-﻿using System;
+﻿using Catalog.API.Infrastructure.Exceptions;
+using System;
 
-namespace Catalog.API.Model
+namespace Microsoft.eShopOnContainers.Services.Catalog.API.Model
 {
     public class CatalogItem
     {
         public int Id { get; set; }
+
         public string Name { get; set; }
+
         public string Description { get; set; }
+
         public decimal Price { get; set; }
+
         public string PictureFileName { get; set; }
+
         public string PictureUri { get; set; }
+
         public int CatalogTypeId { get; set; }
+
         public CatalogType CatalogType { get; set; }
+
         public int CatalogBrandId { get; set; }
+
         public CatalogBrand CatalogBrand { get; set; }
+
         // Quantity in stock
         public int AvailableStock { get; set; }
+
         // Available stock at which we should reorder
         public int RestockThreshold { get; set; }
+
+
         // Maximum number of units that can be in-stock at any time (due to physicial/logistical constraints in warehouses)
         public int MaxStockThreshold { get; set; }
+
         /// <summary>
         /// True if item is on reorder
         /// </summary>
         public bool OnReorder { get; set; }
+
         public CatalogItem() { }
+
 
         /// <summary>
         /// Decrements the quantity of a particular item in inventory and ensures the restockThreshold hasn't
@@ -42,12 +59,12 @@ namespace Catalog.API.Model
         {
             if (AvailableStock == 0)
             {
-                //throw new CatalogDomainException($"Empty stock, product item {Name} is sold out");
+                throw new CatalogDomainException($"Empty stock, product item {Name} is sold out");
             }
 
             if (quantityDesired <= 0)
             {
-                //throw new CatalogDomainException($"Item units desired should be greater than cero");
+                throw new CatalogDomainException($"Item units desired should be greater than cero");
             }
 
             int removed = Math.Min(quantityDesired, this.AvailableStock);
