@@ -6,8 +6,8 @@
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Options;
     using Model;
-    using Polly;
     using System;
+    using Polly;
     using System.Collections.Generic;
     using System.Data.SqlClient;
     using System.Globalization;
