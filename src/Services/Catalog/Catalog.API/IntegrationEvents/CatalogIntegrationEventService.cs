@@ -2,6 +2,8 @@
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.eShopOnContainers.BuildingBlocks.EventBus.Abstractions;
 using Microsoft.eShopOnContainers.BuildingBlocks.EventBus.Events;
+using Microsoft.eShopOnContainers.BuildingBlocks.IntegrationEventLogEF.Services;
+using Microsoft.eShopOnContainers.BuildingBlocks.IntegrationEventLogEF.Utilities;
 using Microsoft.eShopOnContainers.Services.Catalog.API.Infrastructure;
 using System;
 using System.Data.Common;

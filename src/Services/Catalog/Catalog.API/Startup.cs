@@ -4,6 +4,7 @@
     using Autofac.Extensions.DependencyInjection;
     using global::Catalog.API;
     using global::Catalog.API.Infrastructure.Filters;
+    using global::Catalog.API.IntegrationEvents;
     using Microsoft.ApplicationInsights.Extensibility;
     using Microsoft.ApplicationInsights.ServiceFabric;
     using Microsoft.AspNetCore.Builder;
@@ -15,13 +16,18 @@
     using Microsoft.eShopOnContainers.BuildingBlocks.EventBus.Abstractions;
     using Microsoft.eShopOnContainers.BuildingBlocks.EventBusRabbitMQ;
     using Microsoft.eShopOnContainers.BuildingBlocks.EventBusServiceBus;
+    using Microsoft.eShopOnContainers.BuildingBlocks.IntegrationEventLogEF;
+    using Microsoft.eShopOnContainers.BuildingBlocks.IntegrationEventLogEF.Services;
     using Microsoft.eShopOnContainers.Services.Catalog.API.Infrastructure;
+    using Microsoft.eShopOnContainers.Services.Catalog.API.IntegrationEvents.EventHandling;
+    using Microsoft.eShopOnContainers.Services.Catalog.API.IntegrationEvents.Events;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Options;
     using RabbitMQ.Client;
     using System;
+    using System.Data.Common;
     using System.Reflection;
 
     public class Startup
@@ -54,6 +60,17 @@
                 options.ConfigureWarnings(warnings => warnings.Throw(RelationalEventId.QueryClientEvaluationWarning));
             });
 
+            services.AddDbContext<IntegrationEventLogContext>(options =>
+            {
+                options.UseSqlServer(Configuration["ConnectionString"],
+                                     sqlServerOptionsAction: sqlOptions =>
+                                     {
+                                         sqlOptions.MigrationsAssembly(typeof(Startup).GetTypeInfo().Assembly.GetName().Name);
+                                         //Configuring Connection Resiliency: https://docs.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency 
+                                         sqlOptions.EnableRetryOnFailure(maxRetryCount: 10, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
+                                     });
+            });
+
             services.Configure<CatalogSettings>(Configuration);
 
             // Add framework services.
@@ -77,6 +94,11 @@
                     .AllowAnyHeader()
                     .AllowCredentials());
             });
+
+            services.AddTransient<Func<DbConnection, IIntegrationEventLogService>>(
+                sp => (DbConnection c) => new IntegrationEventLogService(c));
+
+            services.AddTransient<ICatalogIntegrationEventService, CatalogIntegrationEventService>();
 
             if (Configuration.GetValue<bool>("AzureServiceBusEnabled"))
             {
@@ -121,6 +143,8 @@
                 });
             }
 
+            RegisterEventBus(services);
+
             var container = new ContainerBuilder();
             container.Populate(services);
             return new AutofacServiceProvider(container.Build());
@@ -154,7 +178,8 @@
               .UseSwaggerUI(c =>
               {
                   c.SwaggerEndpoint($"{ (!string.IsNullOrEmpty(pathBase) ? pathBase : string.Empty) }/swagger/v1/swagger.json", "Catalog.API V1");
-              });            
+              });
+            ConfigureEventBus(app);
         }
 
         private void RegisterAppInsights(IServiceCollection services)
@@ -215,6 +240,13 @@
             services.AddSingleton<IEventBusSubscriptionsManager, InMemoryEventBusSubscriptionsManager>();
             services.AddTransient<OrderStatusChangedToAwaitingValidationIntegrationEventHandler>();
             services.AddTransient<OrderStatusChangedToPaidIntegrationEventHandler>();
+        }
+
+        protected virtual void ConfigureEventBus(IApplicationBuilder app)
+        {
+            var eventBus = app.ApplicationServices.GetRequiredService<IEventBus>();
+            eventBus.Subscribe<OrderStatusChangedToAwaitingValidationIntegrationEvent, OrderStatusChangedToAwaitingValidationIntegrationEventHandler>();
+            eventBus.Subscribe<OrderStatusChangedToPaidIntegrationEvent, OrderStatusChangedToPaidIntegrationEventHandler>();
         }
     }
 }
