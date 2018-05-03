@@ -7,9 +7,7 @@
     using Microsoft.Extensions.Options;
     using Model;
     using System;
-    using Polly;
     using System.Collections.Generic;
-    using System.Data.SqlClient;
     using System.Globalization;
     using System.IO;
     using System.IO.Compression;
@@ -21,43 +19,38 @@
     {
         public async Task SeedAsync(CatalogContext context, IHostingEnvironment env, IOptions<CatalogSettings> settings, ILogger<CatalogContextSeed> logger)
         {
-            var policy = CreatePolicy(logger, nameof(CatalogContextSeed));
+            var useCustomizationData = settings.Value.UseCustomizationData;
+            var contentRootPath = env.ContentRootPath;
+            var picturePath = env.WebRootPath;
 
-            await policy.ExecuteAsync(async () =>
+            if (!context.CatalogBrands.Any())
             {
-                var useCustomizationData = settings.Value.UseCustomizationData;
-                var contentRootPath = env.ContentRootPath;
-                var picturePath = env.WebRootPath;
+                await context.CatalogBrands.AddRangeAsync(useCustomizationData
+                    ? GetCatalogBrandsFromFile(contentRootPath, logger)
+                    : GetPreconfiguredCatalogBrands());
 
-                if (!context.CatalogBrands.Any())
-                {
-                    await context.CatalogBrands.AddRangeAsync(useCustomizationData
-                        ? GetCatalogBrandsFromFile(contentRootPath, logger)
-                        : GetPreconfiguredCatalogBrands());
+                await context.SaveChangesAsync();
+            }
 
-                    await context.SaveChangesAsync();
-                }
+            if (!context.CatalogTypes.Any())
+            {
+                await context.CatalogTypes.AddRangeAsync(useCustomizationData
+                    ? GetCatalogTypesFromFile(contentRootPath, logger)
+                    : GetPreconfiguredCatalogTypes());
 
-                if (!context.CatalogTypes.Any())
-                {
-                    await context.CatalogTypes.AddRangeAsync(useCustomizationData
-                        ? GetCatalogTypesFromFile(contentRootPath, logger)
-                        : GetPreconfiguredCatalogTypes());
+                await context.SaveChangesAsync();
+            }
 
-                    await context.SaveChangesAsync();
-                }
+            if (!context.CatalogItems.Any())
+            {
+                await context.CatalogItems.AddRangeAsync(useCustomizationData
+                    ? GetCatalogItemsFromFile(contentRootPath, context, logger)
+                    : GetPreconfiguredItems());
 
-                if (!context.CatalogItems.Any())
-                {
-                    await context.CatalogItems.AddRangeAsync(useCustomizationData
-                        ? GetCatalogItemsFromFile(contentRootPath, context, logger)
-                        : GetPreconfiguredItems());
+                await context.SaveChangesAsync();
 
-                    await context.SaveChangesAsync();
-
-                    GetCatalogItemPictures(contentRootPath, picturePath);
-                }
-            });
+                GetCatalogItemPictures(contentRootPath, picturePath);
+            }
         }
 
         private IEnumerable<CatalogBrand> GetCatalogBrandsFromFile(string contentRootPath, ILogger<CatalogContextSeed> logger)
@@ -365,19 +358,6 @@
 
             string zipFileCatalogItemPictures = Path.Combine(contentRootPath, "Setup", "CatalogItems.zip");
             ZipFile.ExtractToDirectory(zipFileCatalogItemPictures, picturePath);
-        }
-
-        private Policy CreatePolicy(ILogger<CatalogContextSeed> logger, string prefix, int retries = 3)
-        {
-            return Policy.Handle<SqlException>().
-                WaitAndRetryAsync(
-                    retryCount: retries,
-                    sleepDurationProvider: retry => TimeSpan.FromSeconds(5),
-                    onRetry: (exception, timeSpan, retry, ctx) =>
-                    {
-                        logger.LogTrace($"[{prefix}] Exception {exception.GetType().Name} with message ${exception.Message} detected on attempt {retry} of {retries}");
-                    }
-                );
         }
     }
 }

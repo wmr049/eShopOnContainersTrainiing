@@ -1,12 +1,7 @@
-﻿using Catalog.API;
-using Microsoft.AspNetCore;
+﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.eShopOnContainers.BuildingBlocks.IntegrationEventLogEF;
-using Microsoft.eShopOnContainers.Services.Catalog.API.Infrastructure;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using System.IO;
 namespace Microsoft.eShopOnContainers.Services.Catalog.API
 {
@@ -14,19 +9,7 @@ namespace Microsoft.eShopOnContainers.Services.Catalog.API
     {
         public static void Main(string[] args)
         {
-            BuildWebHost(args)
-                .MigrateDbContext<CatalogContext>((context, services) =>
-                {
-                    var env = services.GetService<IHostingEnvironment>();
-                    var settings = services.GetService<IOptions<CatalogSettings>>();
-                    var logger = services.GetService<ILogger<CatalogContextSeed>>();
-
-                    new CatalogContextSeed()
-                    .SeedAsync(context, env, settings, logger)
-                    .Wait();
-
-                })
-                .MigrateDbContext<IntegrationEventLogContext>((_, __) => { })
+            BuildWebHost(args)                
                 .Run();
         }
 
