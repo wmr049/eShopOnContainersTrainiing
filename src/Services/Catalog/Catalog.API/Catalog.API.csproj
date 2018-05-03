@@ -55,4 +55,8 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Infrastructure\ActionResults\" />
+  </ItemGroup>
+
 </Project>

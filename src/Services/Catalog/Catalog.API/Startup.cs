@@ -3,16 +3,22 @@
     using Autofac;
     using Autofac.Extensions.DependencyInjection;
     using global::Catalog.API;
+    using global::Catalog.API.Infrastructure.Filters;
+
     using Microsoft.ApplicationInsights.Extensibility;
     using Microsoft.ApplicationInsights.ServiceFabric;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
+
     using Microsoft.EntityFrameworkCore;
     using Microsoft.EntityFrameworkCore.Diagnostics;
+
     using Microsoft.eShopOnContainers.Services.Catalog.API.Infrastructure;
+
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
+
     using System;
     using System.Reflection;
 
@@ -30,6 +36,10 @@
             // Add framework services.
             RegisterAppInsights(services);
 
+            services.AddMvc(options =>
+            {
+                options.Filters.Add(typeof(HttpGlobalExceptionFilter));
+            }).AddControllersAsServices();
 
             services.AddDbContext<CatalogContext>(options =>
             {
