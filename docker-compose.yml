@@ -1,11 +1,22 @@
+#docker-compose.yml (Base)
 version: '3'
-
 services:
-  catalog.api:
-    image: eshop/catalog.api:${TAG:-latest}
+  basket.api:
+    image: eshop/basket.api:${TAG:-latest}
     build:
-      context: .
-      dockerfile: src/Services/Catalog/Catalog.API/Dockerfile
-    depends_on:
-      - sql.data
-      - rabbitmq
+      context: ./src/Services/Basket/Basket.API
+      dockerfile: Dockerfile  
+
+
+  sql.data:
+    image: microsoft/mssql-server-linux:2017-latest
+
+  nosql.data:
+    image: mongo
+
+  basket.data:
+    image: redis
+
+  rabbitmq:
+    image: rabbitmq:3-management
+version: '3'
