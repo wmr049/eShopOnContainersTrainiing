@@ -1,5 +1,6 @@
 ﻿using Autofac;
 using Autofac.Extensions.DependencyInjection;
+using Basket.API.Model;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -57,6 +58,8 @@ namespace Basket.API
                     .AllowAnyHeader()
                     .AllowCredentials());
             });
+
+            services.AddTransient<IBasketRepository, RedisBasketRepository>();
 
             services.AddOptions();
 
