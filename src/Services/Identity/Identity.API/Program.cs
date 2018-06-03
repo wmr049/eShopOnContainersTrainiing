@@ -3,7 +3,9 @@ using IdentityServer4.EntityFramework.DbContexts;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System.IO;
 
 namespace Identity.API
@@ -35,22 +37,20 @@ namespace Identity.API
         }
 
         public static IWebHost BuildWebHost(string[] args) =>
-           WebHost.CreateDefaultBuilder(args)
-               .UseKestrel()               
-               .UseContentRoot(Directory.GetCurrentDirectory())
-               .UseIISIntegration()
-               .UseStartup<Startup>()
-               .ConfigureAppConfiguration((builderContext, config) =>
-               {
-                   config.AddEnvironmentVariables();
-               })
-               .ConfigureLogging((hostingContext, builder) =>
-               {
-                   builder.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
-                   builder.AddConsole();
-                   builder.AddDebug();
-               })
-               .UseApplicationInsights()
-               .Build();
+            WebHost.CreateDefaultBuilder(args)
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseStartup<Startup>()
+                .ConfigureAppConfiguration((builderContext, config) =>
+                {
+                    config.AddEnvironmentVariables();
+                })
+                .ConfigureLogging((hostingContext, builder) =>
+                {
+                    builder.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
+                    builder.AddConsole();
+                    builder.AddDebug();
+                })
+                .UseApplicationInsights()
+                .Build();
     }
 }
