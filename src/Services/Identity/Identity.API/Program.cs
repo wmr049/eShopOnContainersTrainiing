@@ -51,6 +51,7 @@ namespace Identity.API
                     builder.AddDebug();
                 })
                 .UseApplicationInsights()
+                .UseUrls(urls: "http://localhost:5105")
                 .Build();
     }
 }
