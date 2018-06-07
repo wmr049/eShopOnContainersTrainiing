@@ -4,17 +4,21 @@ using Identity.API.Data;
 using Identity.API.Models;
 using Identity.API.Services;
 using IdentityServer4.Services;
+using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.ApplicationInsights.ServiceFabric;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.eShopOnContainers.Services.Identity.API.Certificates;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
 using System;
 using System.Reflection;
+
 
 namespace Identity.API
 {
@@ -29,6 +33,8 @@ namespace Identity.API
 
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
+
+            RegisterAppInsights(services);
 
             // Add framework services.
             services.AddDbContext<ApplicationDbContext>(options =>
@@ -62,6 +68,7 @@ namespace Identity.API
             var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
 
             services.AddIdentityServer(x => x.IssuerUri = "null")
+                .AddSigningCredential(Certificate.Get())
                 .AddAspNetIdentity<ApplicationUser>()
                 .AddConfigurationStore(options =>
                 {
@@ -138,6 +145,24 @@ namespace Identity.API
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
 
+        }
+
+        private void RegisterAppInsights(IServiceCollection services)
+        {
+            services.AddApplicationInsightsTelemetry(Configuration);
+            var orchestratorType = Configuration.GetValue<string>("OrchestratorType");
+
+            if (orchestratorType?.ToUpper() == "K8S")
+            {
+                // Enable K8s telemetry initializer
+                services.EnableKubernetes();
+            }
+            if (orchestratorType?.ToUpper() == "SF")
+            {
+                // Enable SF telemetry initializer
+                services.AddSingleton<ITelemetryInitializer>((serviceProvider) =>
+                    new FabricTelemetryInitializer());
+            }
         }
     }
 }
